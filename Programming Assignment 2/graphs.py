@@ -273,10 +273,10 @@ if __name__ == "__main__":
     # for i, e in enumerate(data):
     #    print(i, e)
 
-    #print("Transpose Graph")
-    # G.transpose()
-    # G.print_graph_transpose()
+    print("Transpose Graph")
+    G.transpose()
+    G.print_graph_transpose()
 
-    #print("Strongly Connected Components")
-    # G.strongly_connected_components()
-    # G.print_graph_SCC()
+    print("Strongly Connected Components")
+    print(G.strongly_connected_components())
+
