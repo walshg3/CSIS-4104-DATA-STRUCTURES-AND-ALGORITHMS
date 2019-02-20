@@ -142,7 +142,7 @@ class Digraph(Graph):
 
         vertices = [VertexData() for i in range(len(self._adj))]
         time = 0
-        datboi = deque()
+        topologicalDeque = deque()
 
         def dfs_visit(u):
             nonlocal time
@@ -156,12 +156,12 @@ class Digraph(Graph):
                     dfs_visit(v)
             time = time + 1
             vertices[u].f = time
-            datboi.appendleft(u)
+            topologicalDeque.appendleft(u)
 
         for u in range(len(vertices)):
             if vertices[u].d == 0:
                 dfs_visit(u)
-        return datboi
+        return topologicalDeque
 
     def transpose(self):
         """Computes the transpose of a directed graph. (See textbook page 616 for description of transpose).
@@ -188,69 +188,23 @@ class Digraph(Graph):
     def strongly_connected_components(self):
         """Computes the strongly connected components of a digraph.
         Returns a list of lists, containing one list for each strongly connected component, which is simply a list of the vertices in that component."""
+        componentTranspose = self.transpose()
+        visitedSet = set()
+        components = []
 
-        self._adjSCC = [_AdjacencyList() for i in range(len(self._adj))]
-        endList = []
-        step1 = self.topological_sort()
-        step2 = self.transpose()
+        def is_visited(v,stronglyConnectedList=[]):
+            nonlocal visitedSet
+            visitedSet.add(v)
+            stronglyConnectedList.append(v)
+            for e in componentTranspose._adj[v]:
+                if not e in visitedSet:
+                    is_visited(e,stronglyConnectedList)
+            return stronglyConnectedList
 
-        class VertexData:
-            __slots__ = ['d', 'f', 'pred']
-
-            def __init__(self):
-                self.d = 0
-                self.pred = None
-
-        vertices = [VertexData() for i in range(len(self._adj))]
-        time = 0
-
-        class VertexData:
-            __slots__ = ['d', 'f', 'pred']
-
-            def __init__(self):
-                self.d = 0
-                self.pred = None
-
-        vertices = [VertexData() for i in range(len(self._adj))]
-        time = 0
-        # Started running into problems here. Was not sure how to "print the list of lists"
-
-        def dfs_visit(u):
-            nonlocal time
-            nonlocal vertices
-
-            time = time + 1
-            vertices[u].d = time
-            for v in self._adj[u]:
-                if vertices[v].d == 0:
-                    vertices[v].pred = u
-                    dfs_visit(v)
-            time = time + 1
-            vertices[u].f = time
-
-        for u in step1:
-            if vertices[u].d == 0:
-                dfs_visit(u)
-
-        for v, vList in enumerate(self._adj):
-            for u in vList:
-                self._adjtranspose[u].add(v)
-                endList.insert(u, (u, v))
-
-        returnList = Digraph(len(self._adjtranspose), endList)
-
-        return returnList
-
-    # Can not figure out how to print the SCC
-
-    def print_graph_SCC(self):
-        """Prints the graph of the SCC graph. Copied code from print_graph"""
-        # I have the custom ._adjSCC.
-        for v, vList in enumerate(self._adjSCC):
-            print(v, end=" -> ")
-            for u in vList:
-                print(u, end="\t")
-            print()
+        for v in self.topological_sort():
+            if not v in visitedSet:
+                components.append(is_visited(v,[]))
+        return components
 
 
 class _AdjacencyList:
