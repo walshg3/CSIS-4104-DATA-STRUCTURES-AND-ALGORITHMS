@@ -1,19 +1,14 @@
-# Gregory Walsh
-# DSA II SPRING 2018
-# Programming Assignment 4
-
+#!/usr/bin/python
 # Add any relevant import statements up here.
 import math
-
-
+import sys
 # Programming Assignment 4:
 # Follow the instuctions in comments throughout this file.
 # Don't rename any methods, attributes, functions, etc.
-# Also don't change order or type of parameters.
+# Also don't change order or type of parameters.  
 # You might consider doing the assignment in this order: 1, 2, 5, 6a, 3, 4, 6b.
 
-
-class WeightedAdjacencyMatrix:
+class WeightedAdjacencyMatrix :
 
     # Although technically you do not need to declare variables, including object attributes
     # prior to first use, a consequence of that is that Python must allocate more memory than
@@ -26,7 +21,7 @@ class WeightedAdjacencyMatrix:
     # exception.
     __slots__ = ['_W']
 
-    # 1) Implement the initializer, which should create a matrix with
+    # 1) Implement the initializer, which should create a matrix (i.e., list of lists) with
     # number of rows and columns both equal to size (i.e., number of vertices).
     # Initially there are no edges, which means that the weights should all initially
     # be infinity (inf in Python), other than the diagonal which should have 0s (cost of
@@ -34,38 +29,24 @@ class WeightedAdjacencyMatrix:
     #
     # Use the attribute I provided above in __slots__ for your matrix _W (see comment above).
     # Remember to use self for an object attribute (i.e., self._W )
-    def __init__(self, size):
+    def __init__(self, size) :
         """Initializes a weighted adjacency matrix for a graph with size nodes.
 
         Graph is initialized with size nodes and 0 edges.
-
+        
         Keyword arguments:
         size -- Number of nodes of the graph.
         """
-        # self._W = w
-        # Create the Matrix and set everything to inf
-
-        self._W = []
-        for i in range(size**2):
-            self._W.append(math.inf)
-
-        joinedmatrix = map(list, zip(*[iter(self._W)] * size))
-        self._W = list(joinedmatrix)
-        # Set Diags to 0
-        for i in range(size):
-            self._W[i][i] = 0
-
-    def get_matrix(self):
-        """Function to return the matrix is a tabbed print out. Useful for checking smaller graphs.
-
-        """
         
-        return_list = self._W
-        for i in return_list:
-            print(*i, sep='\t')
+        self._W = list()
+        for i in range(size):
+            self._W.append(list())
+            for j in range(size):
+                self._W[i].append(0 if i == j else math.inf)
+    
 
     # 2) Implement this method (see the provided docstring)
-    def add_edge(self, u, v, weight):
+    def add_edge(self, u, v, weight) :
         """Adds a directed edge from u to v with the specified weight.
 
         Keyword arguments:
@@ -75,9 +56,10 @@ class WeightedAdjacencyMatrix:
         """
 
         self._W[u][v] = weight
+    
 
     # 5) Implement this method (see the provided docstring)
-    def floyd_warshall(self):
+    def floyd_warshall(self) :
         """Floyd Warshall algorithm for all pairs shortest paths.
 
         Returns a matrix D consisting of the weights of the shortest paths between
@@ -86,17 +68,25 @@ class WeightedAdjacencyMatrix:
         Extra Credit version: Returns a tuple (D, P) where D is a matrix consisting of the
         weights of the shortest paths between all pairs of vertices, and P is the predecessors matrix.
         """
-        D = []
-        for i in range(len(self._W)):
-            D.append(self._W[i].copy())
-        for k in range(len(D)):
-            for i in range(len(D)):
-                for j in range(len(D)):
-                    if D[i][k] + D[k][j] < D[i][j]:
-                        D[i][j] = D[i][k] + D[k][j]
-        # for i in D:
-        #    print(i)
-        return D
+
+        D = self._W
+        P = [[i if e!=math.inf else math.inf for i,e in enumerate(v)] for v in D]
+        for k in range(len(self._W)):
+            D_next = list()
+            P_next = list()
+            for i in range(len(self._W)):
+                D_next.append(list())
+                P_next.append(list())
+                for j in range(len(self._W)):
+                    if(D[i][k]+D[k][j] < D[i][j]):
+                        D_next[i].append(D[i][k]+D[k][j])
+                        P_next[i].append(k)
+                    else:
+                        D_next[i].append(D[i][j])
+                        P_next[i].append(P[i][j])
+            P = P_next
+            D = D_next
+        return (D,P)
 
 
 # 3) Implement this function.  First note the lack of indentation.  This is not a method of the above class.
@@ -109,9 +99,7 @@ class WeightedAdjacencyMatrix:
 # appropriately for meters as indicated in the docstring below.
 # See documentation of Python's math functions for any needed trig functions as well as degree
 # to radian conversion: https://docs.python.org/3/library/math.html
-
-
-def haversine_distance(lat1, lng1, lat2, lng2):
+def haversine_distance(lat1, lng1, lat2, lng2) :
     """Computes haversine distance between two points in latitude, longitude.
 
     Keyword Arguments:
@@ -122,23 +110,17 @@ def haversine_distance(lat1, lng1, lat2, lng2):
 
     Returns haversine distance in meters.
     """
+    R = 6371000
+    lat1 = math.radians(lat1)
+    lat2 = math.radians(lat2)
+    lng1 = math.radians(lng1)
+    lng2 = math.radians(lng2)
+    d_lat = lat2-lat1
+    d_lng = lng2-lng1
 
-    R = 6378137  # Earth in meters
-
-    # Need to convert all points to radians.
-    lat1_r = math.radians(lat1)
-    lat2_r = math.radians(lat2)
-    lng1_r = math.radians(lng1)
-    lng2_r = math.radians(lng2)
-
-    # Get Distance of the Latitudes and Longitudes
-    latdif = lat2_r - lat1_r
-    lngdif = lng2_r - lng1_r
-
-    a = math.sin(latdif / 2)**2 + math.cos(lat1_r) * math.cos(lat2_r) * math.sin(lngdif / 2)**2
-
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    return R * c
+    a = math.sin(d_lat/2)**2 + math.cos(lat1)*math.cos(lat2)*math.sin(d_lng/2)**2
+    c = 2*math.atan2(math.sqrt(a),math.sqrt(1-a))
+    return R*c
 
 # 4) Implement this function.  First note the lack of indentation.  This is not a method of the above class.
 # It is a function.
@@ -175,14 +157,12 @@ def haversine_distance(lat1, lng1, lat2, lng2):
 #
 # Converting String that is a number to a number type:
 # float(s) will convert a string s that contains a floating-point number to a floating point number.
-# For example,
+# For example, 
 # s = "101.25"  # s is a string that happens to look like a floating-point number.
 # v = float(s)  # v will now have the floating-point value 101.25
 # Likewise, int(s) will do the same but for integer values.
 #
-
-
-def parse_highway_graph_data(filename):
+def parse_highway_graph_data(filename) :
     """Parses a highway graph file and returns a WeightedAdjacencyMatrix.
 
     Keyword arguments:
@@ -190,150 +170,104 @@ def parse_highway_graph_data(filename):
 
     Returns a WeightedAdjacencyMatrix object.
     """
+    tmg = open(filename)
+    tmg.readline()
+    V,E = tmg.readline().split()
+    V = int(V)
+    E = int(E)
 
-    with open(filename) as f:
-        newlist = []
-        for line in f:
-            list = f.readlines()
-        for word in list:
-            newlist.append(word.split(','))
-        # Gets the Vert and Edges from the file
-        for num in newlist[0]:
-            edgeVert = num.split()
-        vertices = edgeVert[0]
-        vertices = int(vertices)
-        chords = []
-        chordvalue = []
-        edges = edgeVert[1]
-        edges = int(edges)
-        #print("Number of Vertices: ", vertices)
-        #print("Number of Edges: ", edges)
-        latlist = []
-        lnglist = []
-        # Gets the lat and lng from file
-        for value in newlist[1:vertices + 1]:
-            chords.append(value)
-        # print(chords)
-        for num in range(len(chords)):
-            for value in chords[num]:
-                chordvalue.append(value.split())
-        # print(chordvalue)
-        for value in chordvalue:
-            s = value[1]
-            float(s)
-            latlist.append(s)
-            t = value[2]
-            float(t)
-            lnglist.append(t)
-        #print("latlist", latlist)
-        #print("lnglist", lnglist)
+    #save the lat and lng of each vertex in order 
+    vertex_values = list()
+    for i in range(V):
+        vert_id, lat, lng = tmg.readline().split()
+        vertex_values.append((float(lat),float(lng)))
+    
+    # construct graph and add each edge in the file
+    G = WeightedAdjacencyMatrix(V)
+    for i in range(E):
+        from_v,to_v,vert_id = tmg.readline().split()
+        from_v = int(from_v)
+        to_v = int(to_v)
+        dist = haversine_distance(vertex_values[from_v][0],
+            vertex_values[from_v][1],
+            vertex_values[to_v][0],
+            vertex_values[to_v][1])
 
-        # Gets the edges from the file
-        edgevalue = []
-        edgefinal = []
-        edgesep = []
-        edgelist1final = []
-        edgelist2final = []
-        for value in newlist[edges + 2:]:
-            edgevalue.append(value)
-        for value in edgevalue:
-            edgefinal.append(value)
-        # print(edgefinal)
-        for num in range(len(edgefinal)):
-            for value in edgefinal[num]:
-                edgesep.append(value.split())
-        for value in edgesep:
-            s = value[0]
-            int(s)
-            edgelist1final.append(s)
-            t = value[1]
-            int(t)
-            edgelist2final.append(t)
+        #add edges going both ways 
+        G.add_edge(from_v,to_v,dist)
+        G.add_edge(to_v,from_v,dist)
+    tmg.close()
+    return G
 
-        #print(edgelist1final, edgelist2final)
-
-        # Get weight values per edge
-
-        # Add values into matrix
-        matrix = WeightedAdjacencyMatrix(vertices)
-        for i in range(len(edgelist1final)):
-            edge_start = int(edgelist1final[i])
-            edge_end = int(edgelist2final[i])
-
-            lat_start = float(latlist[edge_start])
-            lng_start = float(lnglist[edge_start])
-            lat_end = float(latlist[edge_end])
-            lng_end = float(lnglist[edge_end])
-
-            # print(lat_start)
-            # print(lng_start)
-
-            dist = haversine_distance(lat_start, lng_start, lat_end, lng_end)
-            # print(dist)
-            matrix.add_edge(edge_start, edge_end, dist)
-            matrix.add_edge(edge_end, edge_start, dist)
-
-        return matrix
 
 # 6a) This function should construct a WeightedAdjacencyMatrix object with the vertices and edges of your choice
 # (small enough that you can verify that your Floyd Warshall implementation is correct).
 # After constructing the WeightedAdjacencyMatrix object, call your floyd_warshall method, and then
 # output the D matrix it returns using print statements (one row of matrix per line, columns separated by tabs).
 # If you also computed the predecessor matrix, then output that as well (print a blank line between the matrices).
+def test_with_your_own_graphs() :
 
+    G = WeightedAdjacencyMatrix(4)
+    G.add_edge(0,1,2)
+    G.add_edge(1,3,2)
+    G.add_edge(0,3,2)
+    G.add_edge(2,3,2)
+    G.add_edge(3,0,-1)
+    D = G.floyd_warshall()
 
-def test_with_your_own_graphs():
-
-    m = WeightedAdjacencyMatrix(5)
-
-    m.add_edge(0, 1, 5)
-    m.add_edge(1, 0, 5)
-    m.add_edge(2, 1, 8)
-    m.add_edge(1, 2, 8)
-    m.add_edge(0, 2, 2)
-    m.add_edge(2, 3, 8)
-    m.add_edge(3, 2, 8)
-    m.add_edge(4, 2, 6)
-    m.add_edge(2, 4, 6)
-    m.add_edge(0, 4, 12)
-    m.add_edge(4, 0, 12)
-
-    # m.get_matrix()
-    print("Floyd Graph")
-    g = m.floyd_warshall()
-    for i in g:
-        print(*i, sep='\t')
+    for line in D[0]:
+        for item in line:
+            print(item,end="\t")
+        print()
+    print()
+    for line in D[1]:
+        for item in line:
+            print(item,end="\t")
+        print()
 
 # 6b) This function should use your parseHighwayGraphData to get a WeightedAdjacencyMatrix object corresponding
 # to the graph of your choice from http://tm.teresco.org/graphs/ (I recommend starting with one of the small graphs).
 # Then use your floyd_warshall method to compute all pairs shortest paths.
 # Don't output the entire matrix since that would be a bit large (even for the smaller graphs).
-
 # Instead, the parameter to the function below is a list of 2-tuples.  For each 2-tuple, of the form (from, to)
-
 # in this list, print on one line (in this order): from to distance
-
 # If you implemented the extra credit part (the predecessors), then each line of output should be of the form:
 # from to distance pathTaken
 # You should do this with at least one graph from the linked site, but I recommend trying it with multiple.
 # In what you submit, have this function work with one graph (of your choice).
 # Upload that graph when you submit your assignment (in case the page updates the data, this way I'll have the exact
 # graph that you used).
+def test_with_highway_graph(L) :
+
+    def path(P,from_v,to_v):
+        by_v = P[from_v][to_v]
+        if(by_v == to_v):
+            print(to_v)
+        else:
+            print(by_v,end=" > ")
+            path(P,by_v,to_v)
+
+    if __name__=="__main__":
+        G = parse_highway_graph_data(sys.argv[1])
+    else:
+        G = parse_highway_graph_data("AND-region-simple.tmg")
+
+    D,P = G.floyd_warshall()
+    for points in L:
+        print(points)
+        print(D[points[0]][points[1]],end="\t")
+        print("Path: "+str(points[0]),end=" > ")
+        path(P,points[0],points[1])
 
 
-def test_with_highway_graph(L):
-
-    b = parse_highway_graph_data('SaintMartin.txt')
-    g = b.floyd_warshall()
-
-    for i in g:
-        print(i)
-    for i in L:
-        print(i[0], i[1], g[i[0]][i[1]])
+    print()
 
 
-if __name__ == "__main__":
-    print("Liechtenstein Graph Data")
-    test_with_highway_graph([(1, 0), (2, 4)])
-    print("Test with own Graphs example")
-    test_with_your_own_graphs()
+if __name__=="__main__":
+
+    #arguments passed in the form :
+    #   p4.py "relative/path/to/tmg" "from,to" "from,to" ... 
+    L = list()
+    for points in sys.argv[2:]:
+        L.append([int(x) for x in points.split(",")])
+    test_with_highway_graph(L)

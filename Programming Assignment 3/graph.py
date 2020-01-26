@@ -401,8 +401,8 @@ class Digraph(Graph):
         #    the parameter s is the source vertex.
 
         # Need this for some reason???
-        class VertexData:
-            pass
+        class VertexData :
+            __slots__ = [ 'd', 'pred' ]
 
         def Relax(self, u, v):
             for a, w in self._adj[u].__iter__(True):
@@ -620,4 +620,11 @@ if __name__ == "__main__":
     # methods work correctly.
     # Code in this if block will only run if you run this module, and not if you load this module with
     # an import for use by another module.
-    time_shortest_path_algs()
+    #time_shortest_path_algs()
+    graphtest = generate_random_weighted_digraph(16, 60, 1, 10)
+    graphtest.dijkstras_version_2(0)
+    Graph.print_graph(graphtest)
+    print("%0s %20s %10s %10s" % ("Version", "Vertices", "Edges", "Time"))
+    print('-' * 53)
+    #print("%0s %10s %13s %16s" % ("Dijkstra", "16", "60", "%.5f" % timeit.timeit(graphtest, number=1000)))
+    #timeit.timeit(graphtest, number=1000)

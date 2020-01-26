@@ -24,11 +24,11 @@
 #    Q1: After running time_results, fill in this table in this comment for whatever P and T lengths
 #        you tried (make sure you vary lengths from short to longer:
 #        T-length                 P-Length                  Sequential                Parallel
-#        1404                        2                  0.007528981000000004        1.167664689
-#        1785                        5                  0.008772875000000013        1.171519158
-#        421842                      7                  1.7851877849999997          2.265969331
-#        2015403                     8                  8.301624450999999           6.657903863000001
-#        2600052                     14                 19.892693637                8.098165326999997
+#         75015                      51                 5.244828689                0.5198740080000004
+#          3535                     505                 0.026436074000000254       0.22709064599999973
+#        250010                   50010                 1.8765912390000006         1.1345575299999995
+#       1007903                   16008                 7.666404766000001          4.920288195000001
+#       1250005                 1250005                 1.7773290260000003         0.5478145010000013
 #
 #    Q2: How do the times (of both versions) vary by string length?  If T is held constant, and pattern P length varied, how does
 #        that affect runtime?  If P length is held constant, and text T length varied, how does that affect runtimes?
@@ -50,9 +50,7 @@
 
 # These are imports you will likely need.  Feel free to add any other imports that are necessary.
 # E.g., you might also need Queue for getting the results back from your processes.
-from multiprocessing import Process, Array
 import multiprocessing 
-import ctypes
 import timeit
 from functools import partial
 
@@ -61,7 +59,7 @@ def time_results():
     """Write any code needed to compare the timing of the sequential and parallel versions
     with a variety of string lengths."""
     def parallel_Time(T, P):
-        """Uses timeit to time the parallel run time of any T and P. Returns the time. Note: The number is set to 10 which is not the most accurate however my computer started chugging after increasing passed 10 """
+        """Uses timeit to time the parallel run time of any T and P. Returns the time."""
         time = timeit.timeit(lambda: p_naive_string_matcher(T, P), number=10)
         return time
 
@@ -135,17 +133,17 @@ def naive_string_matcher(T, P):
     P -- the pattern string.
     """
 
-    out = []
-    for i in range((len(T) - len(P)) + 1):
+    output = list()
+    for i in range((len(T) - len(P) + 1)):
         for j in range(len(P)):
             if T[i + j] != P[j]:
                 break
         if j == len(P) - 1:
-            out.append(i)
-    return out
+            output.append(i)
+    return output
 
 
-def p_naive_string_matcher(T, P):
+def p_naive_string_matcher(T, P, p = 4):
     """Parallel naive string matcher algorithm from Problem Set 4.
 
     This function implements the parallel naive string matcher algorithm that you specified in
@@ -203,7 +201,6 @@ def p_naive_string_matcher(T, P):
     T -- the text string to search for patterns.
     P -- the pattern string.
     """
-
     start_list = []
     to_check = []
     match = []
@@ -218,7 +215,6 @@ def p_naive_string_matcher(T, P):
             match.append(i)
     start_list.append(match)
     return match
-
 
 def helper(T, P, p, i):
     if P == T[i:i + p]:
